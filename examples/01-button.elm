@@ -9,39 +9,50 @@ main =
 
 -- MODEL
 
-type alias Model = { total: Int, field: String, error: Maybe String }
+type Model = Model { total: Int, field: String, error: Maybe String }
 
 init : Model
 init =
-  { total = 0, field = "1", error = Nothing }
+  Model { 
+    total = 0
+    , field = "1"
+    , error = Nothing 
+    }
 
 
 -- UPDATE
 
-type Msg = Increment | Decrement | Apply | SetValue String
+type Msg = Increment | Decrement | Apply | Reset | SetValue String
 
 update : Msg -> Model -> Model
-update msg model =
+update msg (Model m) =
   case msg of
     Increment ->
-      { model | total = (model.total + 1) }
+      Model { m | total = (m.total + 1) }
 
     Decrement ->
-      { model | total = (model.total - 1) }
+      Model { m | total = (m.total - 1) }
 
     Apply ->
-      case String.toInt model.field of
-        Nothing -> { model | error = Just ("Unable to parse \"" ++ model.field ++ "\"")}
-        Just x -> { model | total = model.total + x, error = Nothing }
+      case String.toInt m.field of
+        Nothing -> Model 
+          { m | error = Just ("Unable to parse \"" ++ m.field ++ "\"") }
+        Just x -> Model { m | total = m.total + x, error = Nothing }
 
     SetValue x ->
-      { model | field = x}
+      Model { m | field = x}
+
+    Reset ->
+      -- Model { m | total = init.Model.total }
+      Model { m | total = case init of
+        Model { total } -> total
+        }
 
 
 -- VIEW 
 
 view : Model -> Html Msg
-view {total, field, error} =
+view (Model {total, field, error}) =
   div [] 
     [ button [ onClick Increment ] [ text "+" ]
     , button [ onClick Decrement ] [ text "-" ]
@@ -54,6 +65,7 @@ view {total, field, error} =
         ] 
         [ ]
       , button [ onClick Apply ] [ text "Apply" ]
+      , button [ onClick Reset ] [ text "Reset" ]
       ]
     ] 
 
