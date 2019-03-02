@@ -13,10 +13,10 @@ type Model = Model { total: Int, field: String, error: Maybe String }
 
 init : Model
 init =
-  Model { 
+  Model {
     total = 0
     , field = "1"
-    , error = Nothing 
+    , error = Nothing
     }
 
 
@@ -35,7 +35,7 @@ update msg (Model m) =
 
     Apply ->
       case String.toInt m.field of
-        Nothing -> Model 
+        Nothing -> Model
           { m | error = Just ("Unable to parse \"" ++ m.field ++ "\"") }
         Just x -> Model { m | total = m.total + x, error = Nothing }
 
@@ -49,25 +49,25 @@ update msg (Model m) =
         }
 
 
--- VIEW 
+-- VIEW
 
 view : Model -> Html Msg
 view (Model {total, field, error}) =
-  div [] 
+  div []
     [ button [ onClick Increment ] [ text "+" ]
     , button [ onClick Decrement ] [ text "-" ]
     , div [ ] [ text (String.fromInt total) ]
     , div [] [ text (Maybe.withDefault "" error) ]
-    , div [] 
-      [ input 
+    , div []
+      [ input
         [ value field
         , onInput SetValue
-        ] 
+        ]
         [ ]
       , button [ onClick Apply ] [ text "Apply" ]
       , button [ onClick Reset ] [ text "Reset" ]
       ]
-    ] 
+    ]
 
 isOne : Int -> Bool
 isOne x = case x of
