@@ -1,11 +1,13 @@
 import Browser
 import Html exposing (Html, div, text, h1, input, button, form)
-import Html.Attributes exposing (style, value)
+import Html.Attributes exposing (style, value, id)
 import Html.Events exposing (onInput, onClick, onSubmit)
 import Array exposing (Array)
+import Task
+import Browser.Dom as Dom
 
 
-main = Browser.sandbox { init = init, update = update, view = view }
+main = Browser.element { init = init, subscriptions = subscriptions, update = update, view = view }
 
 type alias Model =
   { messages: Array String
@@ -16,25 +18,62 @@ type alias Model =
 type Msg
   = EditField String
   | Enter
+  | Nada
 
-init : Model
-init =
-  { messages = Array.fromList ["Start of game"]
-  , commands = Array.fromList []
-  , entryField = ""
-  }
 
-update : Msg -> Model -> Model
+-- jumpBottom : Cmd Msg
+-- jumpBottom =
+--   Dom.getViewportOf "messages"
+--     |> Task.andThen (\info ->  Dom.setViewportOf "messages" 0 0)
+--     |>
+--     |> Task.perform (\_ -> Nada)
+
+bypassNastiness : a -> Task.Task x a -> Task.Task Never a
+bypassNastiness fallbackValue =
+  Task.onError (
+    \x ->
+      Debug.log (Debug.toString x) (Task.succeed fallbackValue)
+  )
+
+jumpToBottom : String -> Cmd Msg
+jumpToBottom id =
+  Dom.getViewportOf id
+    |> Task.andThen (\info -> Dom.setViewportOf id 0 info.scene.height)
+    |> bypassNastiness ()
+    |> Task.perform (\_ -> Nada)
+
+
+init : () -> (Model, Cmd Msg)
+init _ =
+  ( { messages = Array.fromList ["Start of game"]
+    , commands = Array.fromList []
+    , entryField = ""
+    }
+  , Cmd.none
+
+  )
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     EditField s ->
-      { model | entryField = s }
+      ( { model | entryField = s }
+      , Cmd.none
+      )
     Enter ->
-      { model
-        | entryField = ""
-        , commands = Array.push model.entryField model.commands
-        , messages = Array.push ("You said \"" ++ model.entryField ++ "\"") model.messages
-        }
+      ( { model
+          | entryField = ""
+          , commands = Array.push model.entryField model.commands
+          , messages = Array.push ("You said \"" ++ model.entryField ++ "\"") model.messages
+          }
+      , jumpToBottom "messagesX"
+      )
+    _ ->
+      ( model, Cmd.none )
     -- _ ->
     --   model
 
@@ -49,7 +88,8 @@ view model =
   div []
     [ h1 [] [text "hi"]
     , div
-        [ style "background" "#eee"
+        [ id "messages"
+        , style "background" "#eee"
         , style "height" "20em"
         , style "overflow-y" "auto"
         ]
