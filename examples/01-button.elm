@@ -9,7 +9,12 @@ main =
 
 -- MODEL
 
-type Model = Model { total: Int, field: String, error: Maybe String }
+type Model =
+  Model
+    { total: Int
+    , field: String
+    , error: Maybe String
+    }
 
 init : Model
 init =

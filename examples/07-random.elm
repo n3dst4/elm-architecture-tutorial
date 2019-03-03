@@ -29,7 +29,7 @@ type alias Model =
 init : () -> (Model, Cmd Msg)
 init _ =
   ( Model 1
-  , Cmd.none
+  , rollCommand
   )
 
 
@@ -42,12 +42,15 @@ type Msg
   | NewFace Int
 
 
+rollCommand : Cmd Msg
+rollCommand = Random.generate NewFace (Random.int 1 6)
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     Roll ->
       ( model
-      , Random.generate NewFace (Random.int 1 6)
+      , rollCommand
       )
 
     NewFace newFace ->
