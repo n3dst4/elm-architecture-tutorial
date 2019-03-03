@@ -9,11 +9,13 @@ import Browser.Dom as Dom
 
 main = Browser.element { init = init, subscriptions = subscriptions, update = update, view = view }
 
+
 type alias Model =
   { messages: Array String
   , commands: Array String
   , entryField: String
   }
+
 
 type Msg
   = EditField String
@@ -21,19 +23,11 @@ type Msg
   | Nada
 
 
--- jumpBottom : Cmd Msg
--- jumpBottom =
---   Dom.getViewportOf "messages"
---     |> Task.andThen (\info ->  Dom.setViewportOf "messages" 0 0)
---     |>
---     |> Task.perform (\_ -> Nada)
-
 bypassNastiness : a -> Task.Task x a -> Task.Task Never a
 bypassNastiness fallbackValue =
-  Task.onError (
-    \x ->
-      Debug.log (Debug.toString x) (Task.succeed fallbackValue)
-  )
+  Task.onError
+    (\_ -> (Task.succeed fallbackValue))
+
 
 jumpToBottom : String -> Cmd Msg
 jumpToBottom id =
@@ -53,9 +47,11 @@ init _ =
 
   )
 
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
+
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -70,18 +66,18 @@ update msg model =
           , commands = Array.push model.entryField model.commands
           , messages = Array.push ("You said \"" ++ model.entryField ++ "\"") model.messages
           }
-      , jumpToBottom "messagesX"
+      , jumpToBottom "messages"
       )
     _ ->
       ( model, Cmd.none )
-    -- _ ->
-    --   model
+
 
 formatMessage : String -> Html msg
 formatMessage message =
   div
     [ ]
     [ text message ]
+
 
 view : Model -> Html Msg
 view model =
